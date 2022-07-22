@@ -1,8 +1,13 @@
 import debounce from "lodash.debounce";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import { UserContext } from "../lib/context";
 import { auth, firestore, goggleAuthProvider } from "../lib/firebase";
-
+import Image from "next/image";
 const SignUppage = () => {
     const { user, username } = useContext(UserContext);
     // 1. user SignedOut => <SignInButton />
@@ -32,7 +37,8 @@ const SignInButton = () => {
     };
     return (
         <button className="btn-google" onClick={signInWithGoggle}>
-            <img src="/goggle.png" alt="google" /> Sign in with Goggle
+            <Image src="/goggle.png" alt="google" width={30} height={30} /> Sign
+            in with Goggle
         </button>
     );
 };
@@ -87,25 +93,26 @@ const UsernameForm = () => {
     // Whenever username field change it will check for username
     useEffect(() => {
         checkUserName(formValue);
-    }, [formValue]);
+    }, [formValue, checkUserName]);
 
-    const checkUserName = useCallback(
-        debounce(async (username) => {
-            if (
-                username.length >= 3 &&
-                username !== "enter" &&
-                username !== "admin"
-            ) {
-                const ref = firestore.doc(`usernames/${username}`);
-                const { exists } = await ref.get();
-                console.log("FiresStore read Executed");
-                setIsValid(!exists);
-                setLoading(false);
-            } else {
-                setLoading(false);
-                setIsValid(false);
-            }
-        }, 500),
+    const checkUserName = useMemo(
+        () =>
+            debounce(async (username) => {
+                if (
+                    username.length >= 3 &&
+                    username !== "enter" &&
+                    username !== "admin"
+                ) {
+                    const ref = firestore.doc(`usernames/${username}`);
+                    const { exists } = await ref.get();
+                    console.log("FiresStore read Executed");
+                    setIsValid(!exists);
+                    setLoading(false);
+                } else {
+                    setLoading(false);
+                    setIsValid(false);
+                }
+            }, 500),
         []
     );
 
